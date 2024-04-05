@@ -45,7 +45,10 @@ app.get('/api/cv', (req, res) => {
         }
         res.json({ CV: rows });
     });    
+        // Here is the change:
+        connection.release();
 });
+
 /*
 app.post('/api/cv', (req, res) => {
     connection.query("SELECT * FROM WORK_EXPERIENCE;", (err, rows) => {

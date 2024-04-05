@@ -4,6 +4,7 @@
   "description": "",
   "source": "server.js",
   "scripts": {
+    "start": "nodemon server.js",
     "build": "node server.js"
   },
   "keywords": [],
