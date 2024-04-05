@@ -35,24 +35,36 @@ app.use(express.json());
 app.use(cors());
 
 app.get('/api', (req, res) => {
-    res.json({ message: 'Welcome to my REST API' });
+        res.json({ message: 'Welcome to my CV api!' });   
 });
 
-app.get('/api/users', (req, res) => {
-    res.json({ message: 'GET request to api/users' });
+app.get('/api/cv', (req, res) => {
+    connection.query("SELECT * FROM WORK_EXPERIENCE;", (err, rows) => {
+        if (err) {
+            console.error(err.message);
+        }
+        res.json({ CV: rows });
+    });    
 });
+/*
+app.post('/api/cv', (req, res) => {
+    connection.query("SELECT * FROM WORK_EXPERIENCE;", (err, rows) => {
+        if (err) {
+            res.json({err});
+        }
+        res.json({ CV: rows });
+    });  
+});*/
 
-app.post('/api/users', (req, res) => {
-    res.json({ message: 'POST request to api/users' });
+/*
+app.put('/api/cv/:id', (req, res) => {
+    res.json({ message: 'PUT request to /cv - with id: ' + req.params.id });
 });
-
-app.put('/api/users/:id', (req, res) => {
-    res.json({ message: 'PUT request to /users - with id: ' + req.params.id });
-});
-
-app.delete('/api/users/:id', (req, res) => {
-    res.json({ message: 'DELETE request to /users - with id: ' + req.params.id });
-});
+*/
+/*
+app.delete('/api/cv/:id', (req, res) => {
+    res.json({ message: 'DELETE request to /cv - with id: ' + req.params.id });
+});*/
 
 //Startar servern
 app.listen(port, () => {
