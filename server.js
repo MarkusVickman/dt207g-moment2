@@ -1,6 +1,6 @@
 
 //Variable .env
-require('dotenv').config({path: './.env'});
+require('dotenv').config({ path: './.env' });
 
 //Lägger till mysql och ansluter
 const mysql = require("mysql");
@@ -15,7 +15,7 @@ const connection = mysql.createConnection({
 connection.connect((err) => {
     if (err) {
         console.error("Connection failed big!: " + err);
-       // throw err; Ger fel av Host-servern
+        // throw err; Ger fel av Host-servern
     }
 
     console.log("Connected to MySQL!");
@@ -35,18 +35,27 @@ app.use(express.json());
 app.use(cors());
 
 app.get('/api', (req, res) => {
-        res.json({ message: 'Welcome to my CV api!' });   
+    res.json({ message: 'Welcome to my CV api!' });
 });
 
 app.get('/api/cv', (req, res) => {
+    //Testar att ansluta här för att lösa problem med sleep av host
+    connection.connect((err) => {
+        if (err) {
+            console.error("Connection failed big!: " + err);
+            // throw err; Ger fel av Host-servern
+        }
+
+        console.log("Connected to MySQL!");
+    });
     connection.query("SELECT * FROM WORK_EXPERIENCE;", (err, rows) => {
         if (err) {
             console.error(err.message);
         }
         res.json({ CV: rows });
-    });    
-        // för att fixa när servern går i dvala men crashar express
-       // connection.release();
+    });
+    // för att fixa när servern går i dvala men crashar express
+    // connection.release();
 });
 
 /*
