@@ -12,14 +12,16 @@ const connection = mysql.createConnection({
 });
 
 //Ger meddelande vid anslutning eller vid misslyckad.
-connection.connect((err) => {
-    if (err) {
-        console.error("Connection failed big!: " + err);
-        // throw err; Ger fel av Host-servern
-    }
+function connectToMariaDB() {
+    connection.connect((err) => {
+        if (err) {
+            console.error("Connection failed big!: " + err);
+            // throw err; Ger fel av Host-servern
+        }
 
-    console.log("Connected to MySQL!");
-});
+        console.log("Connected to MySQL!");
+    });
+}
 
 const express = require('express');
 const cors = require('cors');
@@ -39,15 +41,10 @@ app.get('/api', (req, res) => {
 });
 
 app.get('/api/cv', (req, res) => {
-    //Testar att ansluta här för att lösa problem med sleep av host
-    connection.connect((err) => {
-        if (err) {
-            console.error("Connection failed big!: " + err);
-            // throw err; Ger fel av Host-servern
-        }
-
-        console.log("Connected to MySQL!");
-    });
+    //Anropar funktion för att ansluta till mariaDB/MySQL om ej ansluten för att lösa problem med sleep av host
+    if (connection.state === "disconnected") {
+        connectToMariaDB();
+    }
     connection.query("SELECT * FROM WORK_EXPERIENCE;", (err, rows) => {
         if (err) {
             console.error(err.message);
