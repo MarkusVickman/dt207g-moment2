@@ -25,7 +25,7 @@ const express = require('express');
 const cors = require('cors');
 //Inställningar för express
 const app = express();
-const port = 3000;
+const port = process.env.PORT;
 
 //Lägger till view engine, inställningar för statiska filer samt hur bodyparser ska hantera data.
 /*app.set("view engine", "ejs");
