@@ -51,8 +51,7 @@ app.get('/api/cv', (req, res) => {
         }
         res.json({ CV: rows });
     });
-    // för att fixa när servern går i dvala men crashar express
-    connection.config
+
 });
 
 /*
