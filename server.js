@@ -42,9 +42,9 @@ app.get('/api', (req, res) => {
 
 app.get('/api/cv', (req, res) => {
     //Anropar funktion för att ansluta till mariaDB/MySQL om ej ansluten för att lösa problem med sleep av host
-    if (connection.state === "disconnected") {
+    //if (connection.state === "disconnected") {
         connectToMariaDB();
-    }
+    //}
     connection.query("SELECT * FROM WORK_EXPERIENCE;", (err, rows) => {
         if (err) {
             console.error(err.message);
@@ -52,7 +52,7 @@ app.get('/api/cv', (req, res) => {
         res.json({ CV: rows });
     });
     // för att fixa när servern går i dvala men crashar express
-    // connection.release();
+    connection.config
 });
 
 /*
