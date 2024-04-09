@@ -12,16 +12,17 @@ const connection = mysql.createConnection({
 });
 
 //Ger meddelande vid anslutning eller vid misslyckad.
-function connectToMariaDB() {
+//function connectToMariaDB() {
     connection.connect((err) => {
         if (err) {
             console.error("Connection failed big!: " + err);
             // throw err; Ger fel av Host-servern
+        Return err;
         }
 
         console.log("Connected to MySQL!");
     });
-}
+//}
 
 const express = require('express');
 const cors = require('cors');
@@ -29,7 +30,7 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT;
 
-connectToMariaDB();
+//connectToMariaDB();
 
 //Lägger till view engine, inställningar för statiska filer samt hur bodyparser ska hantera data.
 /*app.set("view engine", "ejs");
@@ -44,9 +45,9 @@ app.get('/api', (req, res) => {
 
 app.get('/api/cv', (req, res) => {
     //Anropar funktion för att ansluta till mariaDB/MySQL om ej ansluten för att lösa problem med sleep av host
-    if (connection.state !== "connected") {
-        connectToMariaDB();
-    }
+  //  if (connection.state !== "connected") {
+  //      connectToMariaDB();
+  //  }
     connection.query("SELECT * FROM WORK_EXPERIENCE;", (err, rows) => {
         if (err) {
             res.json({ err });
