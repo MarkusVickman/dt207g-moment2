@@ -29,6 +29,8 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT;
 
+connectToMariaDB();
+
 //Lägger till view engine, inställningar för statiska filer samt hur bodyparser ska hantera data.
 /*app.set("view engine", "ejs");
 app.use(express.static("public")); */ //Statiska filer
@@ -42,27 +44,57 @@ app.get('/api', (req, res) => {
 
 app.get('/api/cv', (req, res) => {
     //Anropar funktion för att ansluta till mariaDB/MySQL om ej ansluten för att lösa problem med sleep av host
-    //if (connection.state === "disconnected") {
+    if (connection.state === "disconnected") {
         connectToMariaDB();
-    //}
+    }
     connection.query("SELECT * FROM WORK_EXPERIENCE;", (err, rows) => {
         if (err) {
-            console.error(err.message);
+            res.json({ err });
         }
-        res.json({ CV: rows });
+        res.json(rows);
     });
-
 });
 
-/*
-app.post('/api/cv', (req, res) => {
-    connection.query("SELECT * FROM WORK_EXPERIENCE;", (err, rows) => {
+
+app.post('/api/add', (req, res) => {
+    //Anropar funktion för att ansluta till mariaDB/MySQL om ej ansluten för att lösa problem med sleep av host
+    if (connection.state === "disconnected") {
+        connectToMariaDB();
+    }
+
+    let companyName = req.body.companyName;
+    let jobTitle = req.body.jobTitle;
+    let location = req.body.location;
+    let startDate = req.body.startDate;
+    let endDate = req.body.endDate;
+    let description = req.body.description;
+
+    connection.query("INSERT INTO WORK_EXPERIENCE(COMPANY_NAME, JOB_TITLE, LOCATION, START_DATE, END_DATE, DESCRIPTION) VALUES(?,?,?,?,?,?)", [companyName, jobTitle, location, startDate, endDate, description], (err, result) => {
         if (err) {
-            res.json({err});
+            res.json({ err });
+        }else{
+            res.json("Lagring i databasen lyckades.");
         }
-        res.json({ CV: rows });
-    });  
-});*/
+        console.table("Database inserts: " + result);
+    });
+}); 
+
+app.delete('/api/delete', (req, res) => {
+    let id = req.params.id;
+    console.log(id);
+    //Anropar funktion för att ansluta till mariaDB/MySQL om ej ansluten för att lösa problem med sleep av host
+    if (connection.state === "disconnected") {
+        connectToMariaDB();
+    }
+    connection.query("DELETE FROM WORK_EXPERIENCE WHERE COURSE_ID=?;", id, (err) => {
+        if (err) {
+            res.json({ err });
+        }else{
+            res.json("Inlägget är borttaget i databasen.");
+        }
+        console.table("Database inserts: " + result);
+    });
+});
 
 /*
 app.put('/api/cv/:id', (req, res) => {
