@@ -13,15 +13,13 @@ const connection = mysql.createConnection({
 
 //Ger meddelande vid anslutning eller vid misslyckad.
 //function connectToMariaDB() {
-    connection.connect((err) => {
-        if (err) {
-            console.error("Connection failed big!: " + err);
-            // throw err; Ger fel av Host-servern
-        Return err;
-        }
-
-        console.log("Connected to MySQL!");
-    });
+connection.connect(err => {
+    if (err) {
+        console.error("Connection failed: " + err);
+        return;
+    }
+    console.log("Connected to MySQL");
+});
 //}
 
 const express = require('express');
