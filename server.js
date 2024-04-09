@@ -44,9 +44,9 @@ app.get('/api', (req, res) => {
 
 app.get('/api/cv', (req, res) => {
     //Anropar funktion för att ansluta till mariaDB/MySQL om ej ansluten för att lösa problem med sleep av host
-    //if (connection.state === "disconnected") {
+    if (connection.state !== "connected") {
         connectToMariaDB();
-    //}
+    }
     connection.query("SELECT * FROM WORK_EXPERIENCE;", (err, rows) => {
         if (err) {
             res.json({ err });
