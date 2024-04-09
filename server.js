@@ -79,20 +79,19 @@ app.post('/api/add', (req, res) => {
     });
 }); 
 
-app.delete('/api/delete', (req, res) => {
+app.delete('/api/delete/:id', (req, res) => {
     let id = req.params.id;
     console.log(id);
     //Anropar funktion för att ansluta till mariaDB/MySQL om ej ansluten för att lösa problem med sleep av host
     if (connection.state === "disconnected") {
         connectToMariaDB();
     }
-    connection.query("DELETE FROM WORK_EXPERIENCE WHERE COURSE_ID=?;", id, (err) => {
+    connection.query("DELETE FROM WORK_EXPERIENCE WHERE ID=?;", id, (err) => {
         if (err) {
             res.json({ err });
         }else{
             res.json("Inlägget är borttaget i databasen.");
         }
-        console.table("Database inserts: " + result);
     });
 });
 
