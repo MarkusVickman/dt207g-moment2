@@ -44,9 +44,9 @@ app.get('/api', (req, res) => {
 
 app.get('/api/cv', (req, res) => {
     //Anropar funktion för att ansluta till mariaDB/MySQL om ej ansluten för att lösa problem med sleep av host
-    if (connection.state === "disconnected") {
+    //if (connection.state === "disconnected") {
         connectToMariaDB();
-    }
+    //}
     connection.query("SELECT * FROM WORK_EXPERIENCE;", (err, rows) => {
         if (err) {
             res.json({ err });
@@ -57,10 +57,6 @@ app.get('/api/cv', (req, res) => {
 
 
 app.post('/api/add', (req, res) => {
-    //Anropar funktion för att ansluta till mariaDB/MySQL om ej ansluten för att lösa problem med sleep av host
-    if (connection.state === "disconnected") {
-        connectToMariaDB();
-    }
 
     let companyName = req.body.companyName;
     let jobTitle = req.body.jobTitle;
@@ -82,10 +78,7 @@ app.post('/api/add', (req, res) => {
 app.delete('/api/delete/:id', (req, res) => {
     let id = req.params.id;
     console.log(id);
-    //Anropar funktion för att ansluta till mariaDB/MySQL om ej ansluten för att lösa problem med sleep av host
-    if (connection.state === "disconnected") {
-        connectToMariaDB();
-    }
+
     connection.query("DELETE FROM WORK_EXPERIENCE WHERE ID=?;", id, (err) => {
         if (err) {
             res.json({ err });
