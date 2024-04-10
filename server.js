@@ -91,6 +91,48 @@ app.post('/api/add', (req, res) => {
     }
 });
 
+//Ändrar rader i mySQL-databasen när förfrågan till webbadress/api/edit görs. Skickar felmeddelande om fel uppstår hos databasen.
+app.put('/api/edit', (req, res) => {
+    let indexId = req.body.indexId;
+    let companyName = req.body.companyName;
+    let jobTitle = req.body.jobTitle;
+    let location = req.body.location;
+    let startDate = req.body.startDate;
+    let endDate = req.body.endDate;
+    let description = req.body.description;
+
+    let error = {};
+
+    let editArray = [companyName, jobTitle, location, startDate, endDate, description];
+
+    //Felhantering om uppgifter saknas
+    if (!indexId && (!companyName && !jobTitle && !location && !startDate && !endDate && !description)) {
+        error = {
+            message: "Parameters missing in the request.",
+            detail: "Put request most include indexId and atleast one of the following parameters companyName, jobTitle, location, startDate, endDate and description",
+            https_response: {
+                message: "Bad Request",
+                code: 400
+            }
+        }
+        res.status(400).json(error);
+        return;
+    }
+
+    //värdet skrivs in på rätt index i rätt kolomn i databasen.
+    else {
+        connection.query("UPDATE WORK_EXPERIENCE SET COMPANY_NAME = ?, JOB_TITLE = ?, LOCATION = ?, START_DATE = ?, END_DATE = ?, DESCRIPTION = ? WHERE ID = ?", [companyName, jobTitle, location, startDate, endDate, description, indexId], (err) => {
+            if (err) {
+                res.status(500).json({ error: "Database error. " + err });
+                return;
+            }
+            else {
+                res.status(200).json({ Success: "Put data updated in database." });
+            }
+        });
+    }
+});
+
 //tar bort data från mySQL server när förfrågan till webbadress/api/cv görs. Skickar felmeddelande om fel uppstår hos databasen.
 app.delete('/api/delete/:id', (req, res) => {
     let id = req.params.id;
