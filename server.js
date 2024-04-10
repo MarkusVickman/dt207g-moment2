@@ -1,4 +1,4 @@
-
+//express server med api hostad hos azure som lagrar och hämtar data från en heliohost mysql databas.
 //Variable .env
 require('dotenv').config({ path: './.env' });
 
@@ -12,7 +12,6 @@ const connection = mysql.createConnection({
 });
 
 //Ger meddelande vid anslutning eller vid misslyckad.
-//function connectToMariaDB() {
 connection.connect(err => {
     if (err) {
         console.error("Connection failed: " + err);
@@ -20,43 +19,43 @@ connection.connect(err => {
     }
     console.log("Connected to MySQL");
 });
-//}
 
+//lägger till express och cors för att kunna ansluta från vilken adress som helst
 const express = require('express');
 const cors = require('cors');
 //Inställningar för express
 const app = express();
 const port = process.env.PORT;
 
-//connectToMariaDB();
-
-//Lägger till view engine, inställningar för statiska filer samt hur bodyparser ska hantera data.
-/*app.set("view engine", "ejs");
-app.use(express.static("public")); */ //Statiska filer
-
+//stöd för ta json-format och 
 app.use(express.json());
 app.use(cors());
 
+//Välkomst meddelande om webbadress/api anropas
 app.get('/api', (req, res) => {
     res.json({ message: 'Welcome to my CV api!' });
 });
 
+//hämtar data från mySQL server och skickar med det som svart i fetch förfrågan om webbadress/api/cv anropas. Skickar felmeddelande om fel uppstår hos databasen.
 app.get('/api/cv', (req, res) => {
-    //Anropar funktion för att ansluta till mariaDB/MySQL om ej ansluten för att lösa problem med sleep av host
-  //  if (connection.state !== "connected") {
-  //      connectToMariaDB();
-  //  }
     connection.query("SELECT * FROM WORK_EXPERIENCE;", (err, rows) => {
         if (err) {
-            res.json({ err });
+            res.status(500).json({ error: "Could not reach database. " + err });
+            return;
         }
-        res.json(rows);
+
+        if (rows.length === 0) {
+            res.status(404).json({ messege: "Database is empty." });
+        }
+        else {
+            res.status(200).json({ Success: "Get data retrieved from database." });
+            res.json(rows);
+        }
     });
 });
 
-
+//lägger till data till mySQL servern från post-anropet om webbadress/api/add anropas. Skickar felmeddelande om fel uppstår hos databasen.
 app.post('/api/add', (req, res) => {
-
     let companyName = req.body.companyName;
     let jobTitle = req.body.jobTitle;
     let location = req.body.location;
@@ -64,38 +63,48 @@ app.post('/api/add', (req, res) => {
     let endDate = req.body.endDate;
     let description = req.body.description;
 
-    connection.query("INSERT INTO WORK_EXPERIENCE(COMPANY_NAME, JOB_TITLE, LOCATION, START_DATE, END_DATE, DESCRIPTION) VALUES(?,?,?,?,?,?)", [companyName, jobTitle, location, startDate, endDate, description], (err, result) => {
-        if (err) {
-            res.json({ err });
-        }else{
-            res.json("Lagring i databasen lyckades.");
-        }
-        console.table("Database inserts: " + result);
-    });
-}); 
+    let error = {};
 
+    //Felhantering om uppgifter saknas
+    if (!companyName || !jobTitle || !location || !startDate || !endDate || !description) {
+        error = {
+            message: "Parameters missing in the request.",
+            detail: "Post request most include companyName, jobTitle, location, startDate, endDate and description",
+            https_response: {
+                message: "Bad Request",
+                code: 400
+            }
+        }
+        res.status(400).json(error);
+    }
+    //Om allt är korrekt körs frågan till mySQL-databasen för att lagre det nya cv
+    else {
+        connection.query("INSERT INTO WORK_EXPERIENCE(COMPANY_NAME, JOB_TITLE, LOCATION, START_DATE, END_DATE, DESCRIPTION) VALUES(?,?,?,?,?,?)", [companyName, jobTitle, location, startDate, endDate, description], (err, result) => {
+            if (err) {
+                res.status(500).json({ error: "Database error. " + err });
+                return;
+            }
+            else {
+                res.status(200).json({ Success: "Post data stored in database." });
+            }
+        });
+    }
+});
+
+//tar bort data från mySQL server när förfrågan till webbadress/api/cv görs. Skickar felmeddelande om fel uppstår hos databasen.
 app.delete('/api/delete/:id', (req, res) => {
     let id = req.params.id;
-    console.log(id);
 
+    //Fråga skickas till databasen för att ta bort raden om den finns annars skapas felkod. Felkod skapas av andra databasfel också.
     connection.query("DELETE FROM WORK_EXPERIENCE WHERE ID=?;", id, (err) => {
         if (err) {
-            res.json({ err });
-        }else{
-            res.json("Inlägget är borttaget i databasen.");
+            res.status(500).json({ error: "Database error. " + err });
+            return;
+        } else {
+            res.status(200).json({ Success: "Delete data removed from database." });
         }
     });
 });
-
-/*
-app.put('/api/cv/:id', (req, res) => {
-    res.json({ message: 'PUT request to /cv - with id: ' + req.params.id });
-});
-*/
-/*
-app.delete('/api/cv/:id', (req, res) => {
-    res.json({ message: 'DELETE request to /cv - with id: ' + req.params.id });
-});*/
 
 //Startar servern
 app.listen(port, () => {
