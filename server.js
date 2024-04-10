@@ -143,8 +143,8 @@ app.delete('/api/delete/:id', (req, res) => {
     //Fråga skickas till databasen för att ta bort raden om den finns annars skapas felkod. Felkod skapas av andra databasfel också.
     connection.query("DELETE FROM WORK_EXPERIENCE WHERE ID=?;", id, (err) => {
         if (err) {
-            res.status(500).json({ error: "Database error. " + err });
-            return;
+        //    res.status(500).json({ error: "Database error. " + err });
+        //   return;
         } else {
             res.status(200).json({ Success: "Delete data removed from database." });
         }
