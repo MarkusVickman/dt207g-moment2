@@ -48,7 +48,6 @@ app.get('/api/cv', (req, res) => {
             res.status(404).json({ messege: "Database is empty." });
         }
         else {
-            res.status(200).json({ Success: "Get data retrieved from database." });
             res.json(rows);
         }
     });
