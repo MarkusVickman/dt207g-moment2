@@ -75,6 +75,7 @@ app.post('/api/add', (req, res) => {
             }
         }
         res.status(400).json(error);
+        return;
     }
     //Om allt är korrekt körs frågan till mySQL-databasen för att lagre det nya cv
     else {
