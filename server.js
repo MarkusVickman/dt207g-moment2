@@ -85,7 +85,7 @@ app.post('/api/add', (req, res) => {
             //    res.status(500).json({ error: "Database error. " + err });
             }
             else {
-            //    res.status(200).json({ Success: "Post data stored in database." });
+                res.json({ Success: "Post data stored in database." });
             }
         });
     }
@@ -141,7 +141,7 @@ app.delete('/api/delete/:id', (req, res) => {
         if (err) {
         //    res.status(500).json({ error: "Database error. " + err });
         } else {
-         //   res.status(200).json({ Success: "Delete data removed from database." });
+            res.json({ Success: "Delete data removed from database." });
         }
     });
 });
