@@ -55,6 +55,7 @@ const pool = mysql.createPool({
         connection.query("SELECT * FROM WORK_EXPERIENCE;", (err, rows) => {
             if (err) {
                 res.status(500).json({ error: "Could not reach database. " + err });
+                connection.release();
                 return;
             }
 
@@ -99,6 +100,7 @@ const pool = mysql.createPool({
             connection.query("INSERT INTO WORK_EXPERIENCE(COMPANY_NAME, JOB_TITLE, LOCATION, START_DATE, END_DATE, DESCRIPTION) VALUES(?,?,?,?,?,?)", [companyName, jobTitle, location, startDate, endDate, description], (err, result) => {
                 if (err) {
                     res.status(500).json({ error: "Database error. " + err });
+                    connection.release();
                     return;
                 }
                 else {
@@ -143,6 +145,7 @@ const pool = mysql.createPool({
             connection.query("UPDATE WORK_EXPERIENCE SET COMPANY_NAME = ?, JOB_TITLE = ?, LOCATION = ?, START_DATE = ?, END_DATE = ?, DESCRIPTION = ? WHERE ID = ?", [companyName, jobTitle, location, startDate, endDate, description, indexId], (err) => {
                 if (err) {
                     res.status(500).json({ error: "Database error. " + err });
+                    connection.release();
                     return;
                 }
                 else {
@@ -163,6 +166,7 @@ const pool = mysql.createPool({
         connection.query("DELETE FROM WORK_EXPERIENCE WHERE ID=?;", id, (err) => {
             if (err) {
                 res.status(500).json({ error: "Database error. " + err });
+                connection.release();
                 return;
             } else {
                 res.status(200).json({ Success: "Delete data removed from database." });
