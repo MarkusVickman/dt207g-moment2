@@ -6,14 +6,15 @@ const mysql = require("mysql");
 
 //Funktion för att ansluta till databas. Anslutningar skapas i varje anrop för att komma runt 
 //att databasen inte går att nå ibland
-function dataBaseConnect() {
-    const connection = mysql.createConnection({
-        host: process.env.HOST,
-        user: process.env.USER_ACC,
-        password: process.env.PASSWORD,
-        database: process.env.DATABASE
-    });
 
+const connection = mysql.createConnection({
+    host: process.env.HOST,
+    user: process.env.USER_ACC,
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE
+});
+
+function dataBaseConnect() {
     //Ger meddelande vid anslutning eller vid misslyckad.
     connection.connect(err => {
         if (err) {
