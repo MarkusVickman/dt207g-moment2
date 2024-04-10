@@ -43,11 +43,11 @@ app.get('/api', (req, res) => {
 app.get('/api/cv', (req, res) => {
     connection.query("SELECT * FROM WORK_EXPERIENCE;", (err, rows) => {
         if (err) {
-            res.status(500).json({ error: "Could not reach database. " + err });
+           // res.status(500).json({ error: "Could not reach database. " + err });
         }
 
         else if (rows.length === 0) {
-            res.status(404).json({ messege: "Database is empty." });
+          //  res.status(404).json({ messege: "Database is empty." });
         }
         else {
             res.json(rows);
@@ -76,16 +76,16 @@ app.post('/api/add', (req, res) => {
                 code: 400
             }
         }
-        res.status(400).json(error);
+       // res.status(400).json(error);
     }
     //Om allt är korrekt körs frågan till mySQL-databasen för att lagre det nya cv
     else {
         connection.query("INSERT INTO WORK_EXPERIENCE(COMPANY_NAME, JOB_TITLE, LOCATION, START_DATE, END_DATE, DESCRIPTION) VALUES(?,?,?,?,?,?)", [companyName, jobTitle, location, startDate, endDate, description], (err, result) => {
             if (err) {
-                res.status(500).json({ error: "Database error. " + err });
+            //    res.status(500).json({ error: "Database error. " + err });
             }
             else {
-                res.status(200).json({ Success: "Post data stored in database." });
+            //    res.status(200).json({ Success: "Post data stored in database." });
             }
         });
     }
@@ -115,17 +115,17 @@ app.put('/api/edit', (req, res) => {
                 code: 400
             }
         }
-        res.status(400).json(error);
+       // res.status(400).json(error);
     }
 
     //värdet skrivs in på rätt index i rätt kolomn i databasen.
     else {
         connection.query("UPDATE WORK_EXPERIENCE SET COMPANY_NAME = ?, JOB_TITLE = ?, LOCATION = ?, START_DATE = ?, END_DATE = ?, DESCRIPTION = ? WHERE ID = ?", [companyName, jobTitle, location, startDate, endDate, description, indexId], (err) => {
             if (err) {
-                res.status(500).json({ error: "Database error. " + err });
+              //  res.status(500).json({ error: "Database error. " + err });
             }
             else {
-                res.status(200).json({ Success: "Put data updated in database." });
+              //  res.status(200).json({ Success: "Put data updated in database." });
             }
         });
     }
@@ -139,9 +139,9 @@ app.delete('/api/delete/:id', (req, res) => {
     //Fråga skickas till databasen för att ta bort raden om den finns annars skapas felkod. Felkod skapas av andra databasfel också.
     connection.query("DELETE FROM WORK_EXPERIENCE WHERE ID=?;", id, (err) => {
         if (err) {
-            res.status(500).json({ error: "Database error. " + err });
+        //    res.status(500).json({ error: "Database error. " + err });
         } else {
-            res.status(200).json({ Success: "Delete data removed from database." });
+         //   res.status(200).json({ Success: "Delete data removed from database." });
         }
     });
 });
