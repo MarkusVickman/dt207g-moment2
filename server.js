@@ -4,9 +4,7 @@ require('dotenv').config({ path: './.env' });
 //Lägger till mysql och ansluter
 const mysql = require("mysql");
 
-//Funktion för att ansluta till databas. Anslutningar skapas i varje anrop för att komma runt 
-//att databasen inte går att nå ibland
-
+//anslutning till mySQL databas
 const connection = mysql.createConnection({
     host: process.env.HOST,
     user: process.env.USER_ACC,
@@ -14,16 +12,15 @@ const connection = mysql.createConnection({
     database: process.env.DATABASE
 });
 
-function dataBaseConnect() {
-    //Ger meddelande vid anslutning eller vid misslyckad.
-    connection.connect(err => {
-        if (err) {
-            console.error("Connection failed: " + err);
-            return;
-        }
-        console.log("Connected to MySQL");
-    });
-}
+//Ger meddelande vid anslutning eller vid misslyckad.
+connection.connect(err => {
+    if (err) {
+        console.error("Connection failed: " + err);
+        return;
+    }
+    console.log("Connected to MySQL");
+});
+
 
 //lägger till express och cors för att kunna ansluta från vilken adress som helst
 const express = require('express');
@@ -43,11 +40,9 @@ app.get('/api', (req, res) => {
 
 //hämtar data från mySQL server och skickar med det som svart i fetch förfrågan om webbadress/api/cv anropas. Skickar felmeddelande om fel uppstår hos databasen.
 app.get('/api/cv', (req, res) => {
-    dataBaseConnect();
     connection.query("SELECT * FROM WORK_EXPERIENCE;", (err, rows) => {
         if (err) {
             res.status(500).json({ error: "Could not reach database. " + err });
-            connection.end();
             return;
         }
 
@@ -58,12 +53,10 @@ app.get('/api/cv', (req, res) => {
             res.json(rows);
         }
     });
-    connection.end();
 });
 
 //lägger till data till mySQL servern från post-anropet om webbadress/api/add anropas. Skickar felmeddelande om fel uppstår hos databasen.
 app.post('/api/add', (req, res) => {
-    dataBaseConnect();
     let companyName = req.body.companyName;
     let jobTitle = req.body.jobTitle;
     let location = req.body.location;
@@ -91,20 +84,17 @@ app.post('/api/add', (req, res) => {
         connection.query("INSERT INTO WORK_EXPERIENCE(COMPANY_NAME, JOB_TITLE, LOCATION, START_DATE, END_DATE, DESCRIPTION) VALUES(?,?,?,?,?,?)", [companyName, jobTitle, location, startDate, endDate, description], (err, result) => {
             if (err) {
                 res.status(500).json({ error: "Database error. " + err });
-                connection.end();
                 return;
             }
             else {
                 res.status(200).json({ Success: "Post data stored in database." });
             }
         });
-        connection.end();
     }
 });
 
 //Ändrar rader i mySQL-databasen när förfrågan till webbadress/api/edit görs. Skickar felmeddelande om fel uppstår hos databasen.
 app.put('/api/edit', (req, res) => {
-    dataBaseConnect();
     let indexId = req.body.indexId;
     let companyName = req.body.companyName;
     let jobTitle = req.body.jobTitle;
@@ -136,34 +126,29 @@ app.put('/api/edit', (req, res) => {
         connection.query("UPDATE WORK_EXPERIENCE SET COMPANY_NAME = ?, JOB_TITLE = ?, LOCATION = ?, START_DATE = ?, END_DATE = ?, DESCRIPTION = ? WHERE ID = ?", [companyName, jobTitle, location, startDate, endDate, description, indexId], (err) => {
             if (err) {
                 res.status(500).json({ error: "Database error. " + err });
-                connection.end();
                 return;
             }
             else {
                 res.status(200).json({ Success: "Put data updated in database." });
             }
         });
-        connection.end();
     }
 
 });
 
 //tar bort data från mySQL server när förfrågan till webbadress/api/cv görs. Skickar felmeddelande om fel uppstår hos databasen.
 app.delete('/api/delete/:id', (req, res) => {
-    dataBaseConnect();
     let id = req.params.id;
 
     //Fråga skickas till databasen för att ta bort raden om den finns annars skapas felkod. Felkod skapas av andra databasfel också.
     connection.query("DELETE FROM WORK_EXPERIENCE WHERE ID=?;", id, (err) => {
         if (err) {
             res.status(500).json({ error: "Database error. " + err });
-            connection.end();
             return;
         } else {
             res.status(200).json({ Success: "Delete data removed from database." });
         }
     });
-    connection.end();
 });
 
 //Startar servern
