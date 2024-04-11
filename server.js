@@ -13,13 +13,13 @@ const connection = mysql.createConnection({
 });
 
 //Ger meddelande vid anslutning eller vid misslyckad.
-connection.connect(err => {
+connection.connect((err) => {
     if (err) {
-        console.error("Connection failed: " + err);
+        console.error("Connection failed big!: " + err);
+       // throw err; Ger fel av Host-servern
     }
-    else {
-        console.log("Connected to MySQL");
-    }
+
+    console.log("Connected to MySQL!");
 });
 
 
