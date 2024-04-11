@@ -99,26 +99,25 @@ app.put('/api/edit', (req, res) => {
     let endDate = req.body.endDate;
     let description = req.body.description;
 
-    let error = {};
-
-    let editArray = [companyName, jobTitle, location, startDate, endDate, description];
-
-    //Felhantering om uppgifter saknas. Om indexId är unknown/false eller om alla av de andra är unknown/false så skrivs felmeddelande
-    if (!indexId || (!companyName && !jobTitle && !location && !startDate && !endDate && !description)) {
-        error = {
-            message: "Parameters missing in the request.",
-            detail: "Put request most include indexId and atleast one of the following parameters companyName, jobTitle, location, startDate, endDate and description",
-            https_response: {
-                message: "Bad Request",
-                code: 400
-            }
+    let error = {
+        message: "Parameters missing in the request.",
+        detail: "Put request most include indexId and atleast one of the following parameters companyName, jobTitle, location, startDate, endDate and description",
+        https_response: {
+            message: "Bad Request",
+            code: 400
         }
-        res.status(400).json(error);
     }
 
+    //Felhantering om uppgifter saknas.
+    if (!indexId) {
+        res.status(400).json(error);
+    }
+    else if (!companyName || !jobTitle || !location || !startDate || !endDate || !description) {
+        res.status(400).json(error);
+    }
     //värdet skrivs in på rätt index i rätt kolomn i databasen.
     else {
-        connection.query("UPDATE WORK_EXPERIENCE SET COMPANY_NAME = ?, JOB_TITLE = ?, LOCATION = ?, START_DATE = ?, END_DATE = ?, DESCRIPTION = ? WHERE ID = ?", [companyName, jobTitle, location, startDate, endDate, description, indexId], (err) => {
+        connection.query("UPDATE WORK_EXPERIENCE SET COMPANY_NAME=?, JOB_TITLE=?, LOCATION=?, START_DATE=?, END_DATE=?, DESCRIPTION=? WHERE ID=?", [companyName, jobTitle, location, startDate, endDate, description, indexId], (err) => {
             if (err) {
                 res.status(500).json({ error: "Database error. " + err });
                 throw err;
