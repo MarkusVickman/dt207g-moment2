@@ -5,7 +5,8 @@ require('dotenv').config({ path: './.env' });
 const mysql = require("mysql");
 
 //anslutning till mySQL databas
-const connection = mysql.createConnection({
+const pool = mysql.createPool({
+    connectionLimit: 10,
     host: process.env.HOST,
     user: process.env.USER_ACC,
     password: process.env.PASSWORD,
@@ -13,14 +14,14 @@ const connection = mysql.createConnection({
 });
 
 //Ger meddelande vid anslutning eller vid misslyckad.
-connection.connect((err) => {
+/*connection.connect((err) => {
     if (err) {
         console.error("Connection failed big!: " + err);
        // throw err; Ger fel av Host-servern
     }
 
     console.log("Connected to MySQL!");
-});
+});*/
 
 
 //lägger till express och cors för att kunna ansluta från vilken adress som helst
@@ -41,14 +42,22 @@ app.get('/api', (req, res) => {
 
 //hämtar data från mySQL server och skickar med det som svart i fetch förfrågan om webbadress/api/cv anropas. Skickar felmeddelande om fel uppstår hos databasen.
 app.get('/api/cv', (req, res) => {
-    connection.query("SELECT * FROM WORK_EXPERIENCE;", (err, rows) => {
-        if (err) {
-            res.status(500).json({ error: "Could not reach database. " + err });
-            throw err;
-        }
-        else {
-            res.json(rows);
-        }
+    pool.getConnection(function (err, connection) {
+        if (err) throw err; // not connected!
+
+        connection.query("SELECT * FROM WORK_EXPERIENCE;", (err, rows) => {
+            if (err) {
+                res.status(500).json({ error: "Could not reach database. " + err });
+                throw err;
+            }
+            else {
+                res.json(rows);
+                // släpper databasanslutningen.
+                connection.release();
+                // hanterar fel vid släpp.
+                if (err) throw err;
+            }
+        });
     });
 });
 
@@ -77,14 +86,22 @@ app.post('/api/add', (req, res) => {
     }
     //Om allt är korrekt körs frågan till mySQL-databasen för att lagre det nya cv
     else {
-        connection.query("INSERT INTO WORK_EXPERIENCE(COMPANY_NAME, JOB_TITLE, LOCATION, START_DATE, END_DATE, DESCRIPTION) VALUES(?,?,?,?,?,?)", [companyName, jobTitle, location, startDate, endDate, description], (err, result) => {
-            if (err) {
-               res.status(500).json({ error: "Database error. " + err });
-               throw err;
-            }
-            else {
-                res.json({ Success: "Post data stored in database." });
-            }
+        pool.getConnection(function (err, connection) {
+            if (err) throw err; // not connected!
+
+            connection.query("INSERT INTO WORK_EXPERIENCE(COMPANY_NAME, JOB_TITLE, LOCATION, START_DATE, END_DATE, DESCRIPTION) VALUES(?,?,?,?,?,?)", [companyName, jobTitle, location, startDate, endDate, description], (err, result) => {
+                if (err) {
+                    res.status(500).json({ error: "Database error. " + err });
+                    throw err;
+                }
+                else {
+                    res.json({ Success: "Post data stored in database." });
+                    // släpper databasanslutningen.
+                    connection.release();
+                    // hanterar fel vid släpp.
+                    if (err) throw err;
+                }
+            });
         });
     }
 });
@@ -117,14 +134,22 @@ app.put('/api/edit', (req, res) => {
     }
     //värdet skrivs in på rätt index i rätt kolomn i databasen.
     else {
-        connection.query("UPDATE WORK_EXPERIENCE SET COMPANY_NAME=?, JOB_TITLE=?, LOCATION=?, START_DATE=?, END_DATE=?, DESCRIPTION=? WHERE ID=?", [companyName, jobTitle, location, startDate, endDate, description, indexId], (err) => {
-            if (err) {
-                res.status(500).json({ error: "Database error. " + err });
-                throw err;
-            }
-            else {
-                res.status(200).json({ Success: "Put data updated in database." });
-            }
+        pool.getConnection(function (err, connection) {
+            if (err) throw err; // not connected!
+
+            connection.query("UPDATE WORK_EXPERIENCE SET COMPANY_NAME=?, JOB_TITLE=?, LOCATION=?, START_DATE=?, END_DATE=?, DESCRIPTION=? WHERE ID=?", [companyName, jobTitle, location, startDate, endDate, description, indexId], (err) => {
+                if (err) {
+                    res.status(500).json({ error: "Database error. " + err });
+                    throw err;
+                }
+                else {
+                    res.status(200).json({ Success: "Put data updated in database." });
+                    // släpper databasanslutningen.
+                    connection.release();
+                    // hanterar fel vid släpp.
+                    if (err) throw err;
+                }
+            });
         });
     }
 
@@ -134,17 +159,24 @@ app.put('/api/edit', (req, res) => {
 app.delete('/api/delete/:id', (req, res) => {
     let id = req.params.id;
 
-    //Fråga skickas till databasen för att ta bort raden om den finns annars skapas felkod. Felkod skapas av andra databasfel också.
-    connection.query("DELETE FROM WORK_EXPERIENCE WHERE ID=?;", id, (err) => {
-        if (err) {
-            res.status(500).json({ error: "Database error. " + err });
-            throw err;
-        } else {
-            res.json({ Success: "Delete data removed from database." });
-        }
+    pool.getConnection(function (err, connection) {
+        if (err) throw err; // not connected!
+
+        //Fråga skickas till databasen för att ta bort raden om den finns annars skapas felkod. Felkod skapas av andra databasfel också.
+        connection.query("DELETE FROM WORK_EXPERIENCE WHERE ID=?;", id, (err) => {
+            if (err) {
+                res.status(500).json({ error: "Database error. " + err });
+                throw err;
+            } else {
+                res.json({ Success: "Delete data removed from database." });
+                // släpper databasanslutningen.
+                connection.release();
+                // hanterar fel vid släpp.
+                if (err) throw err;
+            }
+        });
     });
 });
-
 //Startar servern
 app.listen(port, () => {
     console.log('Server is running on port: ' + port);
